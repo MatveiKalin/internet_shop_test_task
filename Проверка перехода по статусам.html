@@ -1,0 +1,109 @@
+<script>
+
+/*
+предположим статусы пока есть только следующие
+id = 1 Отказ 
+id = 2 Сборка 
+id = 3 Доставка 
+id = 4 Выполнено 
+
+модель перехода
+Сборка - Доставка - выполнено
+на отказ можно перевести со сборки и доставки
+
+предложи как можно сделать контроль корректности перехода по статусам.
+
+*/
+	
+	/* Версия 1. Без массива */
+	// current_status_order_id - это текущий ИД статуса заказа
+	// new_status_order_id - это ИД статуса заказа, который должен заменить текущий ИД статуса заказа
+	function chek_change_status_order(current_status_order_id, new_status_order_id) {
+	
+		// Если текущий статус "Сборка", 
+		// то можно перейти в статусы "Доставка", "Отказ".
+		if (current_status_order_id == 2) {
+			
+			if (
+				new_status_order_id == 3 ||   // Доставка
+				new_status_order_id == 1      // Отказ
+			) {
+				console.log('Можно заменить текущий ИД статуса заказа ' + current_status_order_id +  ' на новый ИД статуса заказа ' + new_status_order_id);
+				console.log('ИД статуса заказа успешно изменен');
+				return 1;
+			}
+			else {
+				console.log('Ошибка, нельзя заменить ИД статуса заказа');
+				return 0;
+			}
+		}
+		
+		
+		
+		// Если текущий статус "Доставка", 
+		// то можно перейти в статусы "Выполнено", "Отказ".
+		if (current_status_order_id == 3) {
+		
+			if (
+				new_status_order_id == 4 ||   // Выполнено 
+				new_status_order_id == 1      // Отказ
+			) {
+				console.log('Можно заменить текущий ИД статуса заказа ' + current_status_order_id +  ' на новый ИД статуса заказа ' + new_status_order_id);
+				console.log('ИД статуса заказа успешно изменен');
+				return 1;
+			}
+			else {
+				console.log('Ошибка, нельзя заменить ИД статуса заказа');
+				return 0;
+			}
+		}
+		
+		
+		console.log('Ошибка, нельзя заменить ИД статуса заказа');
+		return 0;
+	}
+	
+	
+	// Вызов функции
+	chek_change_status_order(2, 3);
+	
+	
+
+	
+
+
+	/* Версия 2. C массивом */
+	// current_status_order_id - это текущий ИД статуса заказа
+	// new_status_order_id - это ИД статуса заказа, который должен заменить текущий ИД статуса заказа
+	function chek_change_status_order2(current_status_order_id, new_status_order_id) {
+
+		// Массив, в котором хранятся идентификаторы у статусов заказа
+		// id = 1 Отказ 
+		// id = 2 Сборка 
+		// id = 3 Доставка 
+		// id = 4 Выполнено 
+		var arr_status_order_id = [1, 2, 3, 4];
+		
+		for (var i = 1; i < arr_status_order_id.length; ++i) {
+			
+			// Если текущий ИД статуса заказа равен ИД в массиве,
+			// И новый ИД статуса заказа равен следующему значению в массиве
+			// Тогда разрешить смену статуса заказа 
+			if (
+				current_status_order_id == arr_status_order_id[i] &&
+				new_status_order_id == arr_status_order_id[i+1]
+			) {
+				console.log('Можно заменить текущий ИД статуса заказа ' + current_status_order_id +  ' на новый ИД статуса заказа ' + new_status_order_id);
+				console.log('ИД статуса заказа успешно изменен');
+				return 1;
+			}
+		}
+		
+		console.log('Ошибка, нельзя заменить ИД статуса заказа');
+		return 0;
+	}
+	
+	// Вызов функции
+	chek_change_status_order2(2, 4);
+	
+</script>
