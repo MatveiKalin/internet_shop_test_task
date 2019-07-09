@@ -7,9 +7,6 @@ alter table basket
 alter table category_goods
    drop constraint fk_cat_gds_cat_gds_id;
 
-alter table goods
-   drop constraint fk_goods_category_goods_id;
-
 alter table goods_inherit_category
    drop constraint fk_gds_inhrt_cat_goods_id;
 
@@ -130,7 +127,7 @@ create index i_basket_goods_price_id on basket (
 create table category_goods 
 (
    category_goods_id    INTEGER              not null,
-   parent_category_goods_id INTEGER              not null,
+   parent_category_goods_id INTEGER,
    category_goods_name  VARCHAR2(200)        not null,
    order_by             INTEGER              not null,
    constraint PK_CATEGORY_GOODS primary key (category_goods_id)
@@ -169,7 +166,6 @@ comment on table client is
 create table goods 
 (
    goods_id             INTEGER              not null,
-   category_goods_id    INTEGER              not null,
    goods_name           VARCHAR2(200)        not null,
    length               NUMBER,
    width                NUMBER,
@@ -184,7 +180,7 @@ comment on table goods is
 /* Index: i_goods_category_goods_id                             */
 /*==============================================================*/
 create index i_goods_category_goods_id on goods (
-   category_goods_id ASC
+   
 );
 
 /*==============================================================*/
@@ -385,10 +381,6 @@ alter table category_goods
    add constraint fk_cat_gds_cat_gds_id foreign key (parent_category_goods_id)
       references category_goods (category_goods_id);
 
-alter table goods
-   add constraint fk_goods_category_goods_id foreign key (category_goods_id)
-      references category_goods (category_goods_id);
-
 alter table goods_inherit_category
    add constraint fk_gds_inhrt_cat_goods_id foreign key (goods_id)
       references goods (goods_id);
@@ -432,19 +424,64 @@ alter table rule_trans_status_order
 alter table rule_trans_status_order
    add constraint fk_trans_s_ord_foll_s_ord_id foreign key (follow_status_order_id)
       references status_order (status_order_id);
-	  
+
 	  
 /* --------------------------- Код ниже создан мной --------------------------- */	  
 
+/* Наполнение таблицы категории товаров (category_goods) */
 create sequence category_goods_seq;
+create sequence category_goods_orderby_seq;
 
 insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
-values (category_goods_seq.nextval);
+values (category_goods_seq.nextval, null, 'Одежда', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 1, 'Обувь', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 1, 'Брюки', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 2, 'Зимняя обувь', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 2, 'Летняя обувь', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 4, 'Валенки', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 4, 'Зимние ботинки', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 5, 'Кроссовки', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 5, 'Сандали', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 5, 'Лапти', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 3, 'Джинсы', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 3, 'Подштанники', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 11, 'Зауженные джинсы', category_goods_orderby_seq.nextval);
+
+insert into category_goods (category_goods_id, parent_category_goods_id, category_goods_name, order_by)
+values (category_goods_seq.nextval, 11, 'Джинсы с низкой посадкой', category_goods_orderby_seq.nextval);
 
 
 
-
+/* Наполнение таблицы товаров (goods) */
 CREATE SEQUENCE goods_seq;
 
-INSERT INTO goods (goods_id, category_goods_id)
-VALUES ();
+INSERT INTO goods (goods_id, category_goods_id, goods_name, length, width, height)
+VALUES (goods_seq.nextval, 4,);
+
+
+
+
