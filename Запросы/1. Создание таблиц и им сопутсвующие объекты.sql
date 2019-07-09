@@ -476,12 +476,63 @@ values (category_goods_seq.nextval, 11, 'Джинсы с низкой посад
 
 
 
-/* Наполнение таблицы товаров (goods) */
-CREATE SEQUENCE goods_seq;
+/* Наполнение таблицы "товаров" (goods) */
+create sequence goods_seq;
 
-INSERT INTO goods (goods_id, category_goods_id, goods_name, length, width, height)
-VALUES (goods_seq.nextval, 4,);
+insert into goods (goods_id, goods_name, length, width, height)
+values (goods_seq.nextval, 'Зимние ботинки Nike', 25.00, 15.00, 24.00);
+
+insert into goods (goods_id, goods_name, length, width, height)
+values (goods_seq.nextval, 'Зимние ботинки Adidas', 22.10, 15.00, 23.50);
+
+insert into goods (goods_id, goods_name, length, width, height)
+values (goods_seq.nextval, 'Кроссовки китайские Adidac', 25.00, 15.00, 10.00);
+
+insert into goods (goods_id, goods_name, length, width, height)
+values (goods_seq.nextval, 'Подштанники c петельками', null, 35.00, 60.50);
+
+insert into goods (goods_id, goods_name, length, width, height)
+values (goods_seq.nextval, 'Джинсы намеренно мятые', null, 35.00, 60.50);
 
 
+
+/* Наполнение таблицы "цена товаров" (goods_price) */
+create sequence goods_price_seq;
+
+insert into goods_price (goods_price_id, goods_id, price, active_from)
+values (goods_price_seq.nextval, 1, 6000, sysdate);
+
+insert into goods_price (goods_price_id, goods_id, price, active_from)
+values (goods_price_seq.nextval, 2, 6200, sysdate);
+
+insert into goods_price (goods_price_id, goods_id, price, active_from)
+values (goods_price_seq.nextval, 3, 1500, sysdate);
+
+insert into goods_price (goods_price_id, goods_id, price, active_from)
+values (goods_price_seq.nextval, 4, 150, sysdate);
+
+insert into goods_price (goods_price_id, goods_id, price, active_from)
+values (goods_price_seq.nextval, 5, 2590, sysdate);
+
+
+
+
+/* Наполнение таблицы, показывающей отношение товара к категориям (goods_inherit_category) */
+create sequence goods_inherit_category_seq;
+
+insert into goods_inherit_category (goods_inherit_category_id, goods_id, category_goods_id)
+values (goods_inherit_category_seq.nextval, 1, 7);
+
+insert into goods_inherit_category (goods_inherit_category_id, goods_id, category_goods_id)
+values (goods_inherit_category_seq.nextval, 2, 7);
+
+insert into goods_inherit_category (goods_inherit_category_id, goods_id, category_goods_id)
+values (goods_inherit_category_seq.nextval, 3, 8);
+
+insert into goods_inherit_category (goods_inherit_category_id, goods_id, category_goods_id)
+values (goods_inherit_category_seq.nextval, 4, 12);
+
+insert into goods_inherit_category (goods_inherit_category_id, goods_id, category_goods_id)
+values (goods_inherit_category_seq.nextval, 5, 14);
 
 
