@@ -4,7 +4,7 @@
 
 <Workspace>
 	<Local Expanded="Yes">
-		<Model Expanded="Yes" ID="{12952D07-C748-43FE-BA5E-619B7EC34951}" Name="PhysicalDataModel_internet_shop" Type="{CDE44E21-9669-11D1-9914-006097355D9B}" URL="PhysicalDataModel_internet_shop.pdm"/>
+		<Model Expanded="Yes" ID="{12952D07-C748-43FE-BA5E-619B7EC34951}" Name="PhysicalDataModel_internet_shop" Selected="Yes" Type="{CDE44E21-9669-11D1-9914-006097355D9B}" URL="PhysicalDataModel_internet_shop.pdm"/>
 	</Local>
 	<BrowserModule Name="Repository"/>
 </Workspace>
