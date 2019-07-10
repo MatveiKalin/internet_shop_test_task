@@ -50,10 +50,6 @@ drop index i_cat_gds_parent_cat_gds_id;
 
 drop table category_goods cascade constraints;
 
-drop table client cascade constraints;
-
-drop index i_goods_category_goods_id;
-
 drop table goods cascade constraints;
 
 drop index i_gds_inhrt_cat_cat_gds_id;
@@ -92,13 +88,15 @@ drop table rule_trans_status_order cascade constraints;
 
 drop table status_order cascade constraints;
 
+drop table users cascade constraints;
+
 /*==============================================================*/
 /* Table: basket                                                */
 /*==============================================================*/
 create table basket 
 (
    basket_id            INTEGER              not null,
-   client_id            INTEGER              not null,
+   users_id             INTEGER              not null,
    goods_price_id       INTEGER              not null,
    amount               INTEGER              not null,
    constraint PK_BASKET primary key (basket_id)
@@ -111,7 +109,7 @@ comment on table basket is
 /* Index: i_basket_user_id                                      */
 /*==============================================================*/
 create index i_basket_user_id on basket (
-   client_id ASC
+   users_id ASC
 );
 
 /*==============================================================*/
@@ -147,20 +145,6 @@ create index i_cat_gds_parent_cat_gds_id on category_goods (
 );
 
 /*==============================================================*/
-/* Table: client                                                */
-/*==============================================================*/
-create table client 
-(
-   client_id            INTEGER              not null,
-   login                VARCHAR2(200)        not null,
-   password             VARCHAR2(200)        not null,
-   constraint PK_CLIENT primary key (client_id)
-);
-
-comment on table client is
-'Таблица пользователей.';
-
-/*==============================================================*/
 /* Table: goods                                                 */
 /*==============================================================*/
 create table goods 
@@ -175,13 +159,6 @@ create table goods
 
 comment on table goods is
 'Таблица товаров';
-
-/*==============================================================*/
-/* Index: i_goods_category_goods_id                             */
-/*==============================================================*/
-create index i_goods_category_goods_id on goods (
-   
-);
 
 /*==============================================================*/
 /* Table: goods_inherit_category                                */
@@ -298,7 +275,7 @@ create index i_order_detail_gds_price_id on order_detail (
 create table orders 
 (
    orders_id            INTEGER              not null,
-   client_id            INTEGER              not null,
+   users_id             INTEGER              not null,
    status_order_id      INTEGER              not null,
    total_amount         NUMBER               not null,
    constraint PK_ORDERS primary key (orders_id)
@@ -311,7 +288,7 @@ comment on table orders is
 /* Index: i_order_user_id                                       */
 /*==============================================================*/
 create index i_order_user_id on orders (
-   client_id ASC
+   users_id ASC
 );
 
 /*==============================================================*/
@@ -369,13 +346,27 @@ comment on table status_order is
 3). on_the_way.
 ';
 
+/*==============================================================*/
+/* Table: users                                                 */
+/*==============================================================*/
+create table users 
+(
+   users_id             INTEGER              not null,
+   login                VARCHAR2(200)        not null,
+   password             VARCHAR2(200)        not null,
+   constraint PK_USERS primary key (users_id)
+);
+
+comment on table users is
+'Таблица пользователей.';
+
 alter table basket
    add constraint fk_basket_goods_price_id foreign key (goods_price_id)
       references goods_price (goods_price_id);
 
 alter table basket
-   add constraint fk_basket_user_id foreign key (client_id)
-      references client (client_id);
+   add constraint fk_basket_user_id foreign key (users_id)
+      references users (users_id);
 
 alter table category_goods
    add constraint fk_cat_gds_cat_gds_id foreign key (parent_category_goods_id)
@@ -410,8 +401,8 @@ alter table order_detail
       references orders (orders_id);
 
 alter table orders
-   add constraint fk_order_user_id foreign key (client_id)
-      references client (client_id);
+   add constraint fk_order_user_id foreign key (users_id)
+      references users (users_id);
 
 alter table orders
    add constraint fk_order_status_order_id foreign key (status_order_id)

@@ -53,10 +53,10 @@ values (category_goods_seq.nextval, 11, 'Джинсы с низкой посад
 create sequence goods_seq;
 
 insert into goods (goods_id, goods_name, length, width, height)
-values (goods_seq.nextval, 'Зимние ботинки Nike', 25.00, 15.00, 24.00);
+values (goods_seq.nextval, 'Зимние ботинки Adidas', 22.10, 15.00, 23.50);
 
 insert into goods (goods_id, goods_name, length, width, height)
-values (goods_seq.nextval, 'Зимние ботинки Adidas', 22.10, 15.00, 23.50);
+values (goods_seq.nextval, 'Зимние ботинки Nike', 25.00, 15.00, 24.00);
 
 insert into goods (goods_id, goods_name, length, width, height)
 values (goods_seq.nextval, 'Кроссовки китайские Adidac', 25.00, 15.00, 10.00);
@@ -107,4 +107,41 @@ values (goods_inherit_category_seq.nextval, 4, 12);
 
 insert into goods_inherit_category (goods_inherit_category_id, goods_id, category_goods_id)
 values (goods_inherit_category_seq.nextval, 5, 14);
+
+
+
+
+/* Создание последовательности для таблицы "пользователи" (users) */
+create sequence users_seq;
+
+insert into users (users_id, login, password)
+values (users_seq.nextval, 'matthewk', 'matthewk');
+
+insert into users (users_id, login, password)
+values (users_seq.nextval, 'miroslav', 'miroslav');
+
+
+
+
+/* Создание последовательности для таблицы "корзины" (basket) */
+create sequence basket_seq;
+
+insert into basket (basket_id, users_id, goods_price_id, amount)
+values (basket_seq.nextval, 1, 1, 1);
+
+insert into basket (basket_id, users_id, goods_price_id, amount)
+values (basket_seq.nextval, 1, 4, 2);
+
+insert into basket (basket_id, users_id, goods_price_id, amount)
+values (basket_seq.nextval, 2, 5, 1);
+
+insert into basket (basket_id, users_id, goods_price_id, amount)
+values (basket_seq.nextval, 2, 3, 2);
+
+
+
+
+
+
+
 
