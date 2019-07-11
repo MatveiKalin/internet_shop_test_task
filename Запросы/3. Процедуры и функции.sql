@@ -479,8 +479,6 @@ begin
   /* exists или not exists */
   /* агрегатная функция count*/
   
-  
-  
   open cursor_category_info;
   
   loop
@@ -524,7 +522,7 @@ end;
 
 
 /* 2. Версия 3. Используется иерархический запрос
-Курсор, который отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
+Процедура, а в ней курсор, который отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
 Иерархический список категорий следующий: 
 ИД категории
 ИД родительской категории
@@ -541,11 +539,65 @@ select
   connect_by_isleaf "Лист дерева?"
 from
   category_goods
-start with 
+start with  
   parent_category_goods_id is null
 connect by 
   prior category_goods_id = parent_category_goods_id;
 */ 
+
+  
+create or replace procedure get_info_tree_cat_goods (refcur out sys_refcursor) 
+is
+
+begin
+
+  open refcur for
+    select
+    level, /* Уровень иерархии */
+    category_goods_id,
+    parent_category_goods_id,
+    category_goods_name,
+    connect_by_isleaf "Лист дерева?" /* 0 - если не лист иерархии, 1 - если лист иерархии  */
+  from
+    category_goods
+  start with /* Корневая запись */
+    parent_category_goods_id is null
+  connect by /* Показываем иерархию */
+    prior category_goods_id = parent_category_goods_id;
+  
+end get_info_tree_cat_goods;
+
+
+
+
+/* Вызов процедуры между begin и end */
+declare
+  tmp$cur sys_refcursor;
+  level integer;
+  category_goods_id integer;
+  parent_category_goods_id integer;
+  category_goods_name varchar2(200);
+  connect_by_isleaf integer;
+begin
+
+  /* Вызов происходит здесь! */
+  get_info_tree_cat_goods (tmp$cur);
+
+  loop
+    fetch 
+      tmp$cur
+    into  
+      level, category_goods_id, parent_category_goods_id, category_goods_name, connect_by_isleaf;
+    
+    exit when tmp$cur%notfound;
+    
+    dbms_output.put_line('Уровень: ' || level ||
+             '       ИД категории товара: ' || category_goods_id ||
+             ',        Родительский ИД  у категории товара: ' || parent_category_goods_id ||
+             ',        Название категории товара: ' || category_goods_name ||
+             ',        Является ли листом?: ' || connect_by_isleaf);
+  end loop;
+end;
 
 
   
