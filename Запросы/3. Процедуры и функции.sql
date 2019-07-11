@@ -390,20 +390,22 @@ declare
   
   cursor cursor_category_info is
     select
-	  category_goods_id,
-	  parent_category_goods_id,
-	  category_goods_name
-	from
-	  category_goods;
+    category_goods_id,
+    parent_category_goods_id,
+    category_goods_name
+  from
+    category_goods;
        
       
       
-  v_cursor_category_info  cursor_category_info%ROWTYPE;
+  v_cursor_category_info        cursor_category_info%ROWTYPE;
+  v_count_category_goods_id     integer;
 begin
   
   
   /* Возможно, можно использовать представленя */
   /* exists или not exists */
+  /* агрегатная функция count*/
   
   
   
@@ -417,20 +419,131 @@ begin
       v_cursor_category_info;
       
     exit when (cursor_category_info%notfound); 
-	
-	
-	select * 
-	from 
-	where 
-		category_goods_id <> 
+  
+  
+    /* Если count(category_goods_id) = 0, то запись в таблице является листом */
+    select
+      count(category_goods_id)
+    into 
+      v_count_category_goods_id
+    from
+      category_goods
+    where 
+      parent_category_goods_id = v_cursor_category_info.category_goods_id;
       
-    dbms_output.put_line('ИД товара: ' ||  v_cursor_category_info.category_goods_id ||
-             ',        Название товара: ' ||  v_cursor_category_info.parent_category_goods_id ||
-             ',        текущая цена товара: ' || v_cursor_category_info.category_goods_name);
-            
+      
+    if (v_count_category_goods_id <> 0) then
+      dbms_output.put_line('ИД товара: ' ||  v_cursor_category_info.category_goods_id ||
+						   ',        ИД родительской категории: ' ||  v_cursor_category_info.parent_category_goods_id ||
+						   ',        Название: ' || v_cursor_category_info.category_goods_name|| 
+						   ',        является листом: нет');
+    else 
+      dbms_output.put_line('ИД товара: ' ||  v_cursor_category_info.category_goods_id ||
+							 ',        ИД родительской категории: ' ||  v_cursor_category_info.parent_category_goods_id ||
+							 ',        Название: ' || v_cursor_category_info.category_goods_name || 
+							 ',        является листом: да');
+    end if;
+  
   end loop;
                 
   close cursor_category_info;
 end;
 
 
+
+/* 2. Версия 2. Исправлено тело условия, чтобы не было повторяющегося куска кода.
+Отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
+Иерархический список категорий следующий: 
+ИД категории
+ИД родительской категории
+Название
+Флаг, который показывает является ли узел листом */
+declare
+  
+  cursor cursor_category_info is
+    select
+      category_goods_id,
+      parent_category_goods_id,
+      category_goods_name
+    from
+      category_goods;
+       
+      
+      
+  v_cursor_category_info        cursor_category_info%ROWTYPE;
+  v_count_category_goods_id     integer;
+begin
+  
+  
+  /* Возможно, можно использовать представленя */
+  /* exists или not exists */
+  /* агрегатная функция count*/
+  
+  
+  
+  open cursor_category_info;
+  
+  loop
+  
+    fetch 
+      cursor_category_info 
+    into 
+      v_cursor_category_info;
+      
+    exit when (cursor_category_info%notfound); 
+  
+  
+    /* Если count(category_goods_id) = 0, то запись в таблице является листом */
+    select
+      count(category_goods_id)
+    into 
+      v_count_category_goods_id
+    from
+      category_goods
+    where 
+      parent_category_goods_id = v_cursor_category_info.category_goods_id;
+      
+    dbms_output.put('ИД товара: ' ||  v_cursor_category_info.category_goods_id ||
+				   ',        ИД родительской категории: ' ||  v_cursor_category_info.parent_category_goods_id ||
+				   ',        Название: ' || v_cursor_category_info.category_goods_name);
+      
+    if (v_count_category_goods_id <> 0) then
+      dbms_output.put(',        является листом: нет');
+    else 
+      dbms_output.put(',        является листом: да');
+    end if;
+    
+    dbms_output.put_line('');
+  
+  end loop;
+                
+  close cursor_category_info;
+end;
+       
+
+
+
+/* 2. Версия 3. Используется иерархический запрос
+Курсор, который отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
+Иерархический список категорий следующий: 
+ИД категории
+ИД родительской категории
+Название
+Флаг, который показывает является ли узел листом */
+
+
+/*select
+  level,
+  category_goods_id,
+  parent_category_goods_id,
+  category_goods_name
+from
+  category_goods
+start with 
+  parent_category_goods_id is null
+connect by 
+  prior category_goods_id = parent_category_goods_id;*/ 
+
+
+  
+                               
