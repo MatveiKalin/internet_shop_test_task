@@ -532,17 +532,20 @@ end;
 Флаг, который показывает является ли узел листом */
 
 
-/*select
+/*
+select
   level,
   category_goods_id,
   parent_category_goods_id,
-  category_goods_name
+  category_goods_name,
+  connect_by_isleaf "Лист дерева?"
 from
   category_goods
 start with 
   parent_category_goods_id is null
 connect by 
-  prior category_goods_id = parent_category_goods_id;*/ 
+  prior category_goods_id = parent_category_goods_id;
+*/ 
 
 
   
