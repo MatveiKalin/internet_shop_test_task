@@ -1,6 +1,9 @@
 /* Создание спецификации пакета */
 create or replace package pkg_goods is
 
+  procedure get_info_tree_cat_goods (refcur out sys_refcursor);
+
+
   procedure get_info_goods_from_id_cat (p_category_goods_id  in   integer, 
 										refcur               out  sys_refcursor);
                       
@@ -24,6 +27,49 @@ end pkg_goods;
 
 /* Создание тела пакета */
 create or replace package body pkg_goods is
+
+	/* 1. Процедура, а в ней курсор, который отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
+	Иерархический список категорий следующий: 
+	ИД категории
+	ИД родительской категории
+	Название
+	Флаг, который показывает является ли узел листом */
+
+	procedure get_info_tree_cat_goods (refcur out sys_refcursor) 
+	is
+
+	begin
+
+	  open refcur for
+		/* Если в категори хотя бы один товар имееет цену, а все остальные не имеют, то вывести эту категорию */
+		select
+		  level, /* Уровень иерархии */
+		  category_goods_id,
+		  parent_category_goods_id,
+		  category_goods_name,
+		  connect_by_isleaf "Лист дерева?" /* 0 - если не лист иерархии, 1 - если лист иерархии  */
+		from
+		  category_goods
+		where
+		  category_goods_id in (
+								select distinct
+								  category_goods.category_goods_id
+								from
+								  goods_price,
+								  goods,
+								  goods_inherit_category,
+								  category_goods
+								where
+								  goods_price.goods_id = goods.goods_id and
+								  goods.goods_id = goods_inherit_category.goods_id and 
+								  goods_inherit_category.category_goods_id = category_goods.category_goods_id and
+								  goods_price.price is not null)
+		start with 
+		  parent_category_goods_id is null
+		connect by 
+		  prior category_goods_id = parent_category_goods_id;
+	  
+	end get_info_tree_cat_goods;
 
   /* 2. Процедура, а вней курсор, который показывает товар, если ввести ИД категории непосредственно, 
   то есть, если вводится ИД категории самого первого уровня, то данный курсор не проходит по всем дочерним элементам.

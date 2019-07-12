@@ -197,9 +197,9 @@ create table goods_price
 (
    goods_price_id       INTEGER              not null,
    goods_id             INTEGER              not null,
-   price                NUMBER               not null,
-   active_from          DATE                 not null,
-   active_to            DATE                 default '01.01.4000' not null,
+   price                NUMBER               null,
+   active_from          DATE                 null,
+   active_to            DATE                 default '01.01.4000' null,
    constraint PK_GOODS_PRICE primary key (goods_price_id)
 );
 
