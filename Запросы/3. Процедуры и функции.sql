@@ -354,32 +354,40 @@ end;
 
 
 
+/* 2. Версия 3. 
+Если вводится ИД категории самого первого уровня, то пройти по всем дочерним элементам.
+Курсор, оторый по ИД категории отдает список:  
+ИД товара, 
+Название товара,
+Текущая цена */
+/*select
+  goods.goods_id,
+  goods.goods_name,
+  goods_price.price
+from
+  category_goods,
+  goods_inherit_category, 
+  goods, 
+  goods_price
+where
+  category_goods.category_goods_id in (select
+                                        category_goods_id
+									  from
+										category_goods
+									  start with 
+										parent_category_goods_id = 2
+									  connect by 
+										prior category_goods_id = parent_category_goods_id) and
+  category_goods.category_goods_id = goods_inherit_category.category_goods_id and
+  goods_inherit_category.goods_id = goods.goods_id and
+  goods.goods_id = goods_price.goods_id and
+  (sysdate between goods_price.active_from and goods_price.active_to);
+*/
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-																					/* 2. Версия 3. 
-																					Если вводится ИД категории самого первого уровня, то пройти по всем дочерним элементам.
-																					Курсор, оторый по ИД категории отдает список:  
-																					ИД товара, 
-																					Название товара,
-																					Текущая цена */
-
-
-
-/* 2. Версия 1. 
+/* 1. Версия 1. 
 Отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
 Иерархический список категорий следующий: 
 ИД категории
@@ -451,7 +459,7 @@ end;
 
 
 
-/* 2. Версия 2. Исправлено тело условия, чтобы не было повторяющегося куска кода.
+/* 1. Версия 2. Исправлено тело условия, чтобы не было повторяющегося куска кода.
 Отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
 Иерархический список категорий следующий: 
 ИД категории
@@ -521,7 +529,7 @@ end;
 
 
 
-/* 2. Версия 3. Используется иерархический запрос
+/* 1. Версия 3. Используется иерархический запрос
 Процедура, а в ней курсор, который отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
 Иерархический список категорий следующий: 
 ИД категории
@@ -553,17 +561,17 @@ begin
 
   open refcur for
     select
-    level, /* Уровень иерархии */
-    category_goods_id,
-    parent_category_goods_id,
-    category_goods_name,
-    connect_by_isleaf "Лист дерева?" /* 0 - если не лист иерархии, 1 - если лист иерархии  */
-  from
-    category_goods
-  start with /* Корневая запись */
-    parent_category_goods_id is null
-  connect by /* Показываем иерархию */
-    prior category_goods_id = parent_category_goods_id;
+		level, /* Уровень иерархии */
+		category_goods_id,
+		parent_category_goods_id,
+		category_goods_name,
+		connect_by_isleaf "Лист дерева?" /* 0 - если не лист иерархии, 1 - если лист иерархии  */
+	from
+		category_goods
+	start with /* Корневая запись */
+		parent_category_goods_id is null
+	connect by /* Показываем иерархию */
+		prior category_goods_id = parent_category_goods_id;
   
 end get_info_tree_cat_goods;
 

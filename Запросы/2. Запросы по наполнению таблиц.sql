@@ -67,6 +67,9 @@ values (goods_seq.nextval, 'Подштанники c петельками', null
 insert into goods (goods_id, goods_name, length, width, height)
 values (goods_seq.nextval, 'Джинсы намеренно мятые', null, 35.00, 60.50);
 
+insert into goods (goods_id, goods_name, length, width, height)
+values (goods_seq.nextval, 'сандалии columbia', 20.10, 14.00, 22.30);
+
 
 
 /* Наполнение таблицы "цена товаров" (goods_price) */
@@ -86,6 +89,9 @@ values (goods_price_seq.nextval, 4, 150, sysdate);
 
 insert into goods_price (goods_price_id, goods_id, price, active_from)
 values (goods_price_seq.nextval, 5, 2590, sysdate);
+
+insert into goods_price (goods_price_id, goods_id, price, active_from)
+values (goods_price_seq.nextval, 6, 2800, sysdate);
 
 
 
@@ -107,6 +113,9 @@ values (goods_inherit_category_seq.nextval, 4, 12);
 
 insert into goods_inherit_category (goods_inherit_category_id, goods_id, category_goods_id)
 values (goods_inherit_category_seq.nextval, 5, 14);
+
+insert into goods_inherit_category (goods_inherit_category_id, goods_id, category_goods_id)
+values (goods_inherit_category_seq.nextval, 6, 9);
 
 
 
