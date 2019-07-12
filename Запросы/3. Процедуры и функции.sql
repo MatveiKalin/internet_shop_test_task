@@ -347,8 +347,8 @@ begin
     exit when tmp$cur%notfound;
     
     dbms_output.put_line('ИД товара: ' || goods_id ||
-             ',        Название товара: ' || goods_name ||
-             ',        текущая цена товара: ' || price);
+						 ',        Название товара: ' || goods_name ||
+						 ',        текущая цена товара: ' || price);
   end loop;
 end;
 
@@ -383,6 +383,64 @@ where
   goods.goods_id = goods_price.goods_id and
   (sysdate between goods_price.active_from and goods_price.active_to);
 */
+create or replace procedure get_info_goods_from_id_cat_v2 (p_category_goods_id  in   integer, 
+														   refcur               out  sys_refcursor) 
+is
+
+begin
+
+  open refcur for
+    select
+	  goods.goods_id,
+	  goods.goods_name,
+	  goods_price.price
+	from
+	  category_goods,
+	  goods_inherit_category, 
+	  goods, 
+	  goods_price
+	where
+	  category_goods.category_goods_id in (select
+											category_goods_id
+										  from
+											category_goods
+										  start with 
+											parent_category_goods_id = p_category_goods_id
+										  connect by 
+											prior category_goods_id = parent_category_goods_id) and
+	  category_goods.category_goods_id = goods_inherit_category.category_goods_id and
+	  goods_inherit_category.goods_id = goods.goods_id and
+	  goods.goods_id = goods_price.goods_id and
+	  (sysdate between goods_price.active_from and goods_price.active_to); /* Цена товара должна попадать в промежуток времени */
+  
+end get_info_goods_from_id_cat_v2;
+
+
+/* Вызов процедуры между begin и end */
+declare
+  tmp$cur sys_refcursor;
+  goods_id integer;
+  goods_name varchar2(200);
+  price number;
+begin
+
+  /* Вызов происходит здесь! */
+  get_info_goods_from_id_cat_v2 (2, tmp$cur); /* Если ввести в первый параметр аргумент 2, то выведутся вся обувь. А если ввести в первый параметр аргумент 3, то выведется все штаны. */
+
+  loop
+    fetch 
+      tmp$cur
+    into  
+      goods_id, goods_name, price;
+    
+    exit when tmp$cur%notfound;
+    
+    dbms_output.put_line('ИД товара: ' || goods_id ||
+						 ',        Название товара: ' || goods_name ||
+						 ',        текущая цена товара: ' || price);
+  end loop;
+end;
+
 
 
 
