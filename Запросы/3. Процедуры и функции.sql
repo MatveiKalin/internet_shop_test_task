@@ -667,12 +667,10 @@ end;
 
 
 
-       
-
-
+     
 
 /* 1. Версия 4. Используется иерархический запрос
-Процедура, а в ней курсор, который отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
+Если в категори хотя бы один товар имееет цену, а все остальные не имеют, то вывести эту категорию 
 Иерархический список категорий следующий: 
 ИД категории
 ИД родительской категории
@@ -826,6 +824,121 @@ begin
   end loop;
 end;
 
+
+
+     
+
+/* 1. Версия 5.
+Процедура, а в ней курсор, который отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
+Иерархический список категорий следующий: 
+ИД категории
+ИД родительской категории
+Название
+Флаг, который показывает является ли узел листом */
+
+
+/*create or replace procedure get_info_tree_cat_goods_v2 ()
+is 
+
+end get_info_tree_cat_goods_v2;*/
+
+
+declare
+	type t_id_cat_include_price is table of integer;
+	type t_id_cat_without_price is table of integer;
+	
+	category_goods_id integer;
+	i integer := 0;
+  
+	cursor get_category_include_price IS
+		select
+		  category_goods_id
+		from
+		  category_goods
+		where
+		  category_goods_id in (
+								select distinct
+								  category_goods.category_goods_id
+								from
+								  goods_price,
+								  goods,
+								  goods_inherit_category,
+								  category_goods
+								where
+								  goods_price.goods_id = goods.goods_id and
+								  goods.goods_id = goods_inherit_category.goods_id and 
+								  goods_inherit_category.category_goods_id = category_goods.category_goods_id and
+								  goods_price.price is not null);
+								  
+						
+						
+	cursor get_category_without_price IS
+		select
+		  category_goods_id
+		from
+		  category_goods
+		where
+		  category_goods_id in (
+								select distinct
+								  category_goods.category_goods_id
+								from
+								  goods_price,
+								  goods,
+								  goods_inherit_category,
+								  category_goods
+								where
+								  goods_price.goods_id = goods.goods_id and
+								  goods.goods_id = goods_inherit_category.goods_id and 
+								  goods_inherit_category.category_goods_id = category_goods.category_goods_id and
+								  goods_price.price is null);
+
+begin
+	--dbms_output.put_line('23!');
+  
+  
+  
+	open get_category_include_price; 
+		
+		i := 0;
+		
+		loop 
+		
+			fetch 
+				get_category_include_price 
+			into 
+				t_id_cat_include_price(i);
+
+			
+			
+			exit when get_category_include_price%NOTFOUND;
+			
+			i := i + 1;
+								
+		end loop;
+
+	close get_category_include_price;
+	
+	
+	i := t_id_cat_include_price.FIRST();
+	
+	WHILE i IS NOT NULL LOOP
+		DBMS_OUTPUT.PUT_LINE(' ' ||l_elective_courses(i));
+		
+		i := t_id_cat_include_price.NEXT(i);
+	END LOOP;
+	
+	
+	/* Записать в массивы ИД категорий, у которых хотябы 1 товар содержит цену */
+	
+	/* Записать в массивы ИД категорий, у которых все товары не содержат цену */
+	
+	
+	/* Вывести древовидный список категорий, где сначала идут категории, в которых есть товары с ценой, хотя бы 1 */
+  
+	/* А потом вывести. Вывести древовидный список категорий без цен */.
+  
+  
+end;
 
 
 
