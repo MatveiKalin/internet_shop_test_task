@@ -196,6 +196,37 @@ end pkg_goods;
 
 /* Вызов процедур из пакета -----------------------------------------------------------------------------------------*/
 
+/* Вызов процедуры "get_info_tree_cat_goods" из пакета между begin и end */
+declare
+  tmp$cur sys_refcursor;
+  level integer;
+  category_goods_id integer;
+  parent_category_goods_id integer;
+  category_goods_name varchar2(200);
+  connect_by_isleaf integer;
+begin
+
+  /* Вызов происходит здесь! */
+  pkg_goods.get_info_tree_cat_goods (tmp$cur);
+
+  loop
+    fetch 
+      tmp$cur
+    into  
+      level, category_goods_id, parent_category_goods_id, category_goods_name, connect_by_isleaf;
+    
+    exit when tmp$cur%notfound;
+    
+    dbms_output.put_line('Уровень: ' || level ||
+						 '       ИД категории товара: ' || category_goods_id ||
+						 ',        Родительский ИД  у категории товара: ' || parent_category_goods_id ||
+						 ',        Название категории товара: ' || category_goods_name ||
+						 ',        Является ли листом?: ' || connect_by_isleaf);
+  end loop;
+end;
+
+
+
 /* Вызов процедуры "get_info_goods_from_id_cat" из пакета между begin и end */
 declare
   tmp$cur sys_refcursor;
