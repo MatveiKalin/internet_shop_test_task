@@ -1,24 +1,24 @@
 /* Создание спецификации пакета */
-create or replace package pkg_goods is
+create or replace package KALIN_TEST.pkg_goods is
 
-  procedure get_info_tree_cat_goods;
+  procedure get_info_tree_cat_goods (refcur     out sys_refcursor) ;
 
 
-  procedure get_info_goods_from_id_cat (p_category_goods_id  in   integer, 
-										refcur               out  sys_refcursor);
+  procedure get_info_goods_from_id_cat (p_category_goods_id     in integer, 
+                                        refcur                  out sys_refcursor);
                       
                       
-  procedure get_info_goods_from_id_cat_v2 (p_category_goods_id  in   integer, 
-										   refcur               out  sys_refcursor); 
+  procedure get_info_goods_from_id_cat_v2 (p_category_goods_id     in integer, 
+                                           refcur                  out sys_refcursor); 
                    
   
-  procedure get_info_goods (p_goods_id  in   integer, 
-							refcur      out  sys_refcursor);
+  procedure get_info_goods (p_goods_id     in integer, 
+                            refcur         out sys_refcursor);
                 
                 
-  procedure add_goods_to_basket (p_users_id       in integer, 
-								 p_goods_price_id in integer,
-								 p_amount         in integer);
+  procedure add_goods_to_basket (p_users_id           in integer, 
+                                 p_goods_price_id     in integer,
+                                 p_amount             in integer);
                    
 end pkg_goods;
 
@@ -26,7 +26,7 @@ end pkg_goods;
 
 
 /* Создание тела пакета */
-create or replace package body pkg_goods is
+create or replace package body KALIN_TEST.pkg_goods is
 
   /* 1. Процедура, которая отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
   Иерархический список категорий следующий: 
@@ -34,203 +34,49 @@ create or replace package body pkg_goods is
   ИД родительской категории
   Название
   Флаг, который показывает является ли узел листом */
-  procedure get_info_tree_cat_goods
+  procedure get_info_tree_cat_goods (refcur     out sys_refcursor) 
   is
-    type t_id_cat is table of integer index by pls_integer;
 
-    ar_id_cat t_id_cat;
-    ar_id_cat_without_price t_id_cat;
-    
-    /* Счетчики */
-    i pls_integer := 0;
-    j pls_integer := 0;
-      
-    /* переменная флаг */
-    l_exists boolean := false;  
-      
-    /* Переменные для записи в них сведений из запроса select */
-    l_level integer;
-    l_category_goods_id category_goods.category_goods_id%type;
-    l_parent_category_goods_id category_goods.parent_category_goods_id%type;
-    l_category_goods_name category_goods.category_goods_name%type;
-    l_connect_by_isleaf integer; 
-
-
-    cursor get_id_cat_include_price is
-      select
-        category_goods_id
-      from
-        category_goods
-      where
-        category_goods_id in (
-                  select distinct
-                    category_goods.category_goods_id
-                  from
-                    goods_price,
-                    goods,
-                    goods_inherit_category,
-                    category_goods
-                  where
-                    goods_price.goods_id = goods.goods_id and
-                    goods.goods_id = goods_inherit_category.goods_id and 
-                    goods_inherit_category.category_goods_id = category_goods.category_goods_id and
-                    goods_price.price is not null);
-                    
-                    
-    cursor get_id_cat_all is
-      select
-        category_goods_id
-      from
-        category_goods;
-        
   begin
 
-    /* Записать в массив ИД категорий, у которых хотя бы 1 товар содержит цену */
-    open get_id_cat_include_price; 
-      
-    i := 0;
-      
-    loop 
-      
-      fetch 
-        get_id_cat_include_price 
-      into 
-        ar_id_cat(i);
-
-      exit when get_id_cat_include_price%NOTFOUND;
-        
-      i := i + 1;
-            
-    end loop;
-
-    close get_id_cat_include_price;
-      
-      
-      
-    /* Вывести древовидный список категорий, где сначала идут категории, в которых есть товары с ценой, хотя бы 1 */
-    dbms_output.put_line('--------------------------- Категории, в которых есть товары с ценой в кол-ве от 1-го товара и выше:');                          
-      
-    i := ar_id_cat.first;
-
-    while (i is not null) loop
-      
-      select
-        level, 
-        category_goods_id,
-        parent_category_goods_id,
-        category_goods_name,
-        connect_by_isleaf "Лист дерева?"
-      into
-        l_level,
-        l_category_goods_id,
-        l_parent_category_goods_id,
-        l_category_goods_name,
-        l_connect_by_isleaf
+    open refcur for
+    select
+      category_goods_id,
+      parent_category_goods_id,
+      category_goods_name,
+      connect_by_isleaf
+    from
+      (select distinct
+      category_goods_id,
+      parent_category_goods_id,
+      category_goods_name,
+      order_by
       from
-        category_goods
-      where
-        category_goods_id = ar_id_cat(i)
-      start with 
-        parent_category_goods_id is null
+      category_goods
+      start with  
+      category_goods_id in (select distinct
+                  category_goods.category_goods_id
+                  from
+                  goods_price,
+                  goods,
+                  goods_inherit_category,
+                  category_goods
+                  where
+                  goods_price.goods_id = goods.goods_id and
+                  goods.goods_id = goods_inherit_category.goods_id and 
+                  goods_inherit_category.category_goods_id = category_goods.category_goods_id and
+                  goods_price.price is not null)
       connect by 
-        prior category_goods_id = parent_category_goods_id;
-
-        
-      dbms_output.put_line('Уровень: ' ||l_level ||
-                               '         ИД категории товара: ' || l_category_goods_id ||
-                               ',        Родительский ИД  у категории товара: ' || l_parent_category_goods_id ||
-                               ',        Название категории товара: ' || l_category_goods_name ||
-                               ',        Является ли листом?: ' || l_connect_by_isleaf ||
-                               ',        В данной категории хотя бы один товар содержит цену');
-                
-      i := ar_id_cat.next(i);
-         
-    end loop;
-
-
-
-    /* Записать в массив ИД категорий, у которых все товары не содержат цену */
-    open get_id_cat_all; 
-       
-      i := 0;
-        
-      loop 
-        
-        fetch 
-          get_id_cat_all 
-        into 
-          l_category_goods_id;
-
-        exit when get_id_cat_all%NOTFOUND;
+      prior parent_category_goods_id = category_goods_id)
       
-
-        j := ar_id_cat.first;
-        l_exists := false;
-          
-        while (j is not null) loop
-          
-          if (ar_id_cat(j) = l_category_goods_id) then
-            l_exists := true;
-          end if;  
-          
-          j := ar_id_cat.next(j); 
-        end loop;
-          
-          
-          
-        if (not l_exists) then
-          ar_id_cat_without_price(i) := l_category_goods_id;
-            
-          i := i + 1;
-        end if;
-          
-      end loop; 
-       
-    close get_id_cat_all;
-       
-       
-       
-    /* А потом вывести древовидный список категорий без цен */
-    dbms_output.put_line('--------------------------- Категории без цены:');                          
       
-    i := ar_id_cat_without_price.first;
-
-    while (i is not null) loop
-      
-      select
-        level, 
-        category_goods_id,
-        parent_category_goods_id,
-        category_goods_name,
-        connect_by_isleaf "Лист дерева?"
-      into
-        l_level,
-        l_category_goods_id,
-        l_parent_category_goods_id,
-        l_category_goods_name,
-        l_connect_by_isleaf
-      from
-        category_goods
-      where
-        category_goods_id = ar_id_cat_without_price(i)
-      start with 
-        parent_category_goods_id is null
-      connect by 
-        prior category_goods_id = parent_category_goods_id;
-
-        
-      dbms_output.put_line('Уровень: ' ||l_level ||
-                               '         ИД категории товара: ' || l_category_goods_id ||
-                               ',        Родительский ИД  у категории товара: ' || l_parent_category_goods_id ||
-                               ',        Название категории товара: ' || l_category_goods_name ||
-                               ',        Является ли листом?: ' || l_connect_by_isleaf ||
-                               ',        В данной категории ни один товар НЕ содержит цену');
-                
-      i := ar_id_cat_without_price.next(i);
-         
-    end loop;
-      
-  end get_info_tree_cat_goods;
+    start with  
+      parent_category_goods_id is null
+    connect by 
+      prior category_goods_id = parent_category_goods_id
+    order siblings by order_by;
+    
+  end get_info_tree_cat_goods; 
 
 
 
@@ -360,7 +206,31 @@ end pkg_goods;
 /* Вызов процедур из пакета -----------------------------------------------------------------------------------------*/
 
 /* Вызов процедуры "get_info_tree_cat_goods" из пакета между begin и end */
-exec pkg_goods.get_info_tree_cat_goods;
+declare
+  tmp$cur sys_refcursor;
+  l_category_goods_id integer;
+  l_parent_category_goods_id integer;
+  l_category_goods_name varchar2(200);
+  l_connect_by_isleaf integer;
+begin
+
+  /* Вызов происходит здесь! */
+  pkg_goods.get_info_tree_cat_goods (tmp$cur);
+
+  loop
+    fetch 
+      tmp$cur
+    into  
+      l_category_goods_id, l_parent_category_goods_id, l_category_goods_name, l_connect_by_isleaf;
+    
+    exit when tmp$cur%notfound;
+    
+    dbms_output.put_line('ИД категории товара: ' || l_category_goods_id ||
+                             ',        Родительский ИД  у категории товара: ' || l_parent_category_goods_id ||
+                             ',        Название категории товара: ' || l_category_goods_name ||
+                             ',        Является ли листом?: ' || l_connect_by_isleaf);
+  end loop;
+end;
 
 
 

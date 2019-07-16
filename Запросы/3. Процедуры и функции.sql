@@ -1455,3 +1455,124 @@ end get_info_tree_cat_goods;
 
 /* Вызов процедуры */
 exec get_info_tree_cat_goods;
+
+
+
+/* 1. Версия 8.
+Процедура, которая отдает иерархический список категорий, начиная с тех, в которых есть товары с заведенной стоимостью. 
+Иерархический список категорий следующий: 
+ИД категории
+ИД родительской категории
+Название
+Флаг, который показывает является ли узел листом */
+
+/* --Запрос должен быть правильным (Виталий проверил)
+select
+  category_goods_id,
+  parent_category_goods_id,
+  category_goods_name,
+  connect_by_isleaf "Лист дерева?"
+from
+    (select distinct
+      category_goods_id,
+      parent_category_goods_id,
+      category_goods_name,
+      order_by
+    from
+      category_goods
+    start with  
+      category_goods_id in (select distinct
+                                    category_goods.category_goods_id
+                                  from
+                                    goods_price,
+                                    goods,
+                                    goods_inherit_category,
+                                    category_goods
+                                  where
+                                    goods_price.goods_id = goods.goods_id and
+                                    goods.goods_id = goods_inherit_category.goods_id and 
+                                    goods_inherit_category.category_goods_id = category_goods.category_goods_id and
+                                    goods_price.price is not null)
+    connect by 
+      prior parent_category_goods_id = category_goods_id)
+      
+      
+start with  
+      parent_category_goods_id is null
+connect by 
+      prior category_goods_id = parent_category_goods_id
+order siblings by order_by;
+*/
+
+create or replace procedure get_info_tree_cat_goods (refcur     out sys_refcursor) 
+is
+
+begin
+
+  open refcur for
+    select
+      category_goods_id,
+      parent_category_goods_id,
+      category_goods_name,
+      connect_by_isleaf
+    from
+      (select distinct
+        category_goods_id,
+        parent_category_goods_id,
+        category_goods_name,
+        order_by
+      from
+        category_goods
+      start with  
+        category_goods_id in (select distinct
+                                category_goods.category_goods_id
+                              from
+                                goods_price,
+                                goods,
+                                goods_inherit_category,
+                                category_goods
+                              where
+                                goods_price.goods_id = goods.goods_id and
+                                goods.goods_id = goods_inherit_category.goods_id and 
+                                goods_inherit_category.category_goods_id = category_goods.category_goods_id and
+                                goods_price.price is not null)
+      connect by 
+        prior parent_category_goods_id = category_goods_id)
+        
+        
+    start with  
+        parent_category_goods_id is null
+    connect by 
+        prior category_goods_id = parent_category_goods_id
+    order siblings by order_by;
+    
+end get_info_tree_cat_goods; 
+
+
+
+/* Вызов процедуры между begin и end */
+declare
+  tmp$cur sys_refcursor;
+  l_category_goods_id integer;
+  l_parent_category_goods_id integer;
+  l_category_goods_name varchar2(200);
+  l_connect_by_isleaf integer;
+begin
+
+  /* Вызов происходит здесь! */
+  get_info_tree_cat_goods (tmp$cur);
+
+  loop
+    fetch 
+      tmp$cur
+    into  
+      l_category_goods_id, l_parent_category_goods_id, l_category_goods_name, l_connect_by_isleaf;
+    
+    exit when tmp$cur%notfound;
+    
+    dbms_output.put_line('ИД категории товара: ' || l_category_goods_id ||
+                             ',        Родительский ИД  у категории товара: ' || l_parent_category_goods_id ||
+                             ',        Название категории товара: ' || l_category_goods_name ||
+                             ',        Является ли листом?: ' || l_connect_by_isleaf);
+  end loop;
+end;
